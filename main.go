@@ -9,19 +9,6 @@ import (
 func main() {
 	reader := bufio.NewScanner(os.Stdin)
 
-	commands = map[string]cliCommnd{
-		"exit": {
-			name:        "exit",
-			description: "exit the pokedex",
-			callback:    commandExit,
-		},
-		"help": {
-			name:        "help",
-			description: "display the help message",
-			callback:    commandHelp,
-		},
-	}
-
 	for {
 		fmt.Print("Pokedex > ")
 		if !reader.Scan() {
@@ -33,9 +20,9 @@ func main() {
 			continue
 		}
 		word := line[0]
-		command, exists := commands[word]
+		command, exists := getCommands()[word]
 		if exists {
-			err := command.callback()
+			err := command.callback(configGlobal)
 			if err != nil {
 				fmt.Println("error", err)
 			}
@@ -49,10 +36,40 @@ func main() {
 	}
 }
 
-type cliCommnd struct {
+type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
-var commands map[string]cliCommnd
+type config struct {
+	nextUrl     string
+	previousUrl string
+}
+
+var configGlobal = &config{}
+
+func getCommands() map[string]cliCommand {
+	return map[string]cliCommand{
+		"help": {
+			name:        "help",
+			description: "Displays a help message",
+			callback:    commandHelp,
+		},
+		"exit": {
+			name:        "exit",
+			description: "Exit the Pokedex",
+			callback:    commandExit,
+		},
+		"map": {
+			name:        "map",
+			description: "show 20 locations",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "show previous 20 locations",
+			callback:    commandMapB,
+		},
+	}
+}

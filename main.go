@@ -4,10 +4,18 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
+
+	"github.com/whynayemnay/pokedex/internal/pokeapi"
 )
 
 func main() {
 	reader := bufio.NewScanner(os.Stdin)
+
+	pokedexClient := pokeapi.NewClient(5 * time.Second)
+	cfg := &config{
+		pokeapiClient: pokedexClient,
+	}
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -22,7 +30,7 @@ func main() {
 		word := line[0]
 		command, exists := getCommands()[word]
 		if exists {
-			err := command.callback(configGlobal)
+			err := command.callback(cfg)
 			if err != nil {
 				fmt.Println("error", err)
 			}
@@ -43,11 +51,12 @@ type cliCommand struct {
 }
 
 type config struct {
-	nextUrl     string
-	previousUrl string
+	pokeapiClient pokeapi.Client
+	nextUrl       *string
+	previousUrl   *string
 }
 
-var configGlobal = &config{}
+// var configGlobal = &config{}
 
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
@@ -64,7 +73,7 @@ func getCommands() map[string]cliCommand {
 		"map": {
 			name:        "map",
 			description: "show 20 locations",
-			callback:    commandMap,
+			callback:    commandMapF,
 		},
 		"mapb": {
 			name:        "mapb",

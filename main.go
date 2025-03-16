@@ -7,14 +7,17 @@ import (
 	"time"
 
 	"github.com/whynayemnay/pokedex/internal/pokeapi"
+	"github.com/whynayemnay/pokedex/internal/pokecache"
 )
 
 func main() {
 	reader := bufio.NewScanner(os.Stdin)
 
-	pokedexClient := pokeapi.NewClient(5 * time.Second)
+	cache := pokecache.NewCache(30 * time.Second)
+	pokedexClient := pokeapi.NewClient(5*time.Second, cache)
 	cfg := &config{
 		pokeapiClient: pokedexClient,
+		cache:         cache,
 	}
 
 	for {
@@ -51,7 +54,8 @@ type cliCommand struct {
 }
 
 type config struct {
-	pokeapiClient pokeapi.Client
+	pokeapiClient *pokeapi.Client
+	cache         *pokecache.Cache
 	nextUrl       *string
 	previousUrl   *string
 }

@@ -13,7 +13,7 @@ import (
 func main() {
 	reader := bufio.NewScanner(os.Stdin)
 
-	cache := pokecache.NewCache(30 * time.Second)
+	cache := pokecache.NewCache(60 * time.Second)
 	pokedexClient := pokeapi.NewClient(5*time.Second, cache)
 	cfg := &config{
 		pokeapiClient: pokedexClient,
@@ -31,9 +31,11 @@ func main() {
 			continue
 		}
 		word := line[0]
+		arg := line[1:]
+
 		command, exists := getCommands()[word]
 		if exists {
-			err := command.callback(cfg)
+			err := command.callback(cfg, arg)
 			if err != nil {
 				fmt.Println("error", err)
 			}
@@ -50,7 +52,7 @@ func main() {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, []string) error
 }
 
 type config struct {
@@ -67,22 +69,27 @@ func getCommands() map[string]cliCommand {
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
-			callback:    commandHelp,
+			callback:    func(cfg *config, args []string) error { return commandHelp(cfg) },
 		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
-			callback:    commandExit,
+			callback:    func(cfg *config, args []string) error { return commandExit(cfg) },
 		},
 		"map": {
 			name:        "map",
-			description: "show 20 locations",
-			callback:    commandMapF,
+			description: "Show 20 locations",
+			callback:    func(cfg *config, args []string) error { return commandMapF(cfg) },
 		},
 		"mapb": {
 			name:        "mapb",
-			description: "show previous 20 locations",
-			callback:    commandMapB,
+			description: "Show previous 20 locations",
+			callback:    func(cfg *config, args []string) error { return commandMapB(cfg) },
+		},
+		"explore": {
+			name:        "explore",
+			description: "Explore the given location, showing Pokémon found there",
+			callback:    commandExplore, // Now correctly accepts args
 		},
 	}
 }

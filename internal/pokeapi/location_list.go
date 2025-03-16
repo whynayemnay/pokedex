@@ -7,7 +7,6 @@ import (
 	"net/http"
 )
 
-// ListLocations -
 func (c *Client) ListLocations(pageURL *string) (RespShallowLocations, error) {
 	url := baseURL + "/location-area"
 	if pageURL != nil {

@@ -6,11 +6,18 @@ import (
 	"net/http"
 )
 
-func (c *Client) ListPokemon(pageUrl *string) (RespSingleLocation, error) {
+func (c *Client) ListPokemon(pageUrl string) (RespSingleLocation, error) {
 	url := baseURL + "/location-area/"
-	if pageUrl != nil {
-		url = url + *pageUrl
+	url = url + pageUrl
+
+	if val, ok := c.cache.Get(url); ok {
+		location := RespSingleLocation{}
+		err := json.Unmarshal(val, &location)
+		if err != nil {
+			return RespSingleLocation{}, err
+		}
 	}
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return RespSingleLocation{}, err
@@ -29,6 +36,6 @@ func (c *Client) ListPokemon(pageUrl *string) (RespSingleLocation, error) {
 	if err != nil {
 		return RespSingleLocation{}, err
 	}
-
+	c.cache.Add(url, data)
 	return locationResp, nil
 }

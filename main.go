@@ -7,17 +7,14 @@ import (
 	"time"
 
 	"github.com/whynayemnay/pokedex/internal/pokeapi"
-	"github.com/whynayemnay/pokedex/internal/pokecache"
 )
 
 func main() {
 	reader := bufio.NewScanner(os.Stdin)
 
-	cache := pokecache.NewCache(60 * time.Second)
-	pokedexClient := pokeapi.NewClient(5*time.Second, cache)
+	pokedexClient := pokeapi.NewClient(5*time.Second, time.Minute*5)
 	cfg := &config{
 		pokeapiClient: pokedexClient,
-		cache:         cache,
 	}
 
 	for {
@@ -31,11 +28,14 @@ func main() {
 			continue
 		}
 		word := line[0]
-		arg := line[1:]
+		args := []string{}
+		if len(line) > 1 {
+			args = line[1:]
+		}
 
 		command, exists := getCommands()[word]
 		if exists {
-			err := command.callback(cfg, arg)
+			err := command.callback(cfg, args...)
 			if err != nil {
 				fmt.Println("error", err)
 			}
@@ -52,12 +52,11 @@ func main() {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config, []string) error
+	callback    func(*config, ...string) error
 }
 
 type config struct {
-	pokeapiClient *pokeapi.Client
-	cache         *pokecache.Cache
+	pokeapiClient pokeapi.Client
 	nextUrl       *string
 	previousUrl   *string
 }
@@ -69,27 +68,27 @@ func getCommands() map[string]cliCommand {
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
-			callback:    func(cfg *config, args []string) error { return commandHelp(cfg) },
+			callback:    commandHelp,
 		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
-			callback:    func(cfg *config, args []string) error { return commandExit(cfg) },
+			callback:    commandExit,
 		},
 		"map": {
 			name:        "map",
 			description: "Show 20 locations",
-			callback:    func(cfg *config, args []string) error { return commandMapF(cfg) },
+			callback:    commandMapF,
 		},
 		"mapb": {
 			name:        "mapb",
 			description: "Show previous 20 locations",
-			callback:    func(cfg *config, args []string) error { return commandMapB(cfg) },
+			callback:    commandMapB,
 		},
 		"explore": {
 			name:        "explore",
 			description: "Explore the given location, showing Pokémon found there",
-			callback:    commandExplore, // Now correctly accepts args
+			callback:    commandExplore,
 		},
 	}
 }

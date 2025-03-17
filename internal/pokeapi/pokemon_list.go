@@ -2,6 +2,7 @@ package pokeapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -11,6 +12,7 @@ func (c *Client) ListPokemon(pageUrl string) (RespSingleLocation, error) {
 	url = url + pageUrl
 
 	if val, ok := c.cache.Get(url); ok {
+		fmt.Println("Cache hit for: ", url)
 		location := RespSingleLocation{}
 		err := json.Unmarshal(val, &location)
 		if err != nil {

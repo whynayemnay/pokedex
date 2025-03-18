@@ -27,7 +27,7 @@ func commandCatch(cfg *config, args ...string) error {
 	}
 
 	fmt.Println("...")
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 	try := CatchPokemon(pokemonEncounter.BaseExperience)
 	if try {
 		fmt.Println(pokemonName, " was successfuly caught")

@@ -15,6 +15,7 @@ func main() {
 	pokedexClient := pokeapi.NewClient(5*time.Second, time.Minute*5)
 	cfg := &config{
 		pokeapiClient: pokedexClient,
+		pokeDex:       make(map[string]pokeapi.RespPokemonEncounter),
 	}
 
 	for {
@@ -59,6 +60,7 @@ type config struct {
 	pokeapiClient pokeapi.Client
 	nextUrl       *string
 	previousUrl   *string
+	pokeDex       map[string]pokeapi.RespPokemonEncounter
 }
 
 // var configGlobal = &config{}
@@ -87,8 +89,13 @@ func getCommands() map[string]cliCommand {
 		},
 		"explore": {
 			name:        "explore",
-			description: "Explore the given location, showing Pokémon found there",
+			description: "Explore the given location, showing pokemon found there",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "catch the given pokemon",
+			callback:    commandCatch,
 		},
 	}
 }
